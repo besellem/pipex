@@ -6,7 +6,7 @@
 /*   By: besellem <besellem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/28 14:04:24 by besellem          #+#    #+#             */
-/*   Updated: 2021/06/28 15:59:27 by besellem         ###   ########.fr       */
+/*   Updated: 2021/06/29 13:43:21 by besellem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ int	ft_free_all(int code)
 			}
 			ft_memdel((void **)&singleton()->cmds);
 		}
+		close(singleton()->fd1);
+		close(singleton()->fd2);
 		free(singleton());
 	}
 	return (code);

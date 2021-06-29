@@ -6,115 +6,81 @@
 /*   By: besellem <besellem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/28 13:48:19 by besellem          #+#    #+#             */
-/*   Updated: 2021/06/28 18:18:55 by besellem         ###   ########.fr       */
+/*   Updated: 2021/06/29 16:15:36 by besellem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	first_part(t_pipex *pipex, const char *executable, int fd[2])
+int	ft_check_open(char *path, int mode)
 {
-	int		file1_fd;
-	pid_t	pid;
+	int	fd;
 
-	file1_fd = open(pipex->file1, O_RDONLY);
-	if (-1 == file1_fd)
+	fd = open(path, mode);
+	if (SYSCALL_ERROR == fd)
 	{
-		ft_dprintf(STDERR_FILENO, PROG_NAME ": %s: %s\n",
-			pipex->file1, strerror(errno));
-		return ;
+		ft_dprintf(STDERR_FILENO, PROG_NAME": %s: %s\n", path, strerror(errno));
+		return (STDIN_FILENO);
 	}
+	return (fd);
+}
+
+void	exec_cmd(t_pipex *pipex, char **cmds)
+{
+	const char	*executable = search_executable(cmds[0]);
+
+	if (SYSCALL_ERROR == execve(executable, cmds, pipex->env))
+	{
+		ft_memdel((void **)&executable);
+		perror(PROG_NAME);
+		exit(EXIT_FAILURE);
+	}
+}
+
+void	do_pipe(t_pipex *pipex, int __fd, char **cmds)
+{
+	pid_t	pid;
+	int		fd[2];
+
 	pipe(fd);
 	pid = fork();
 	if (pid < 0)
 		perror(PROG_NAME);
 	else if (0 == pid)
 	{
-		dup2(file1_fd, STDIN_FILENO);
-		// close(fd[0]);
+		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
-		if (-1 == execve(executable, pipex->cmds[0].cmd, pipex->env))
-			perror(PROG_NAME);
+		if (STDIN_FILENO == __fd)
+			exit(EXIT_FAILURE);
+		exec_cmd(pipex, cmds);
 	}
 	else
 	{
-		waitpid(pid, NULL, 0);
 		close(fd[1]);
-		close(file1_fd);
-	}
-}
-
-void	second_part(t_pipex *pipex, size_t index, int fd[], int fd_index)
-{
-	const char	*executable = search_executable(pipex->cmds[index].cmd[0]);
-	pid_t		pid;
-	int			fd_tmp[2];
-
-	if (!executable || !pipex->cmds[index].cmd)
-		return ;
-	pipe(fd_tmp);
-	pid = fork();
-	if (pid < 0)
-		perror(PROG_NAME);
-	else if (0 == pid)
-	{
-		dup2(fd_tmp[1], STDIN_FILENO);
-		if (-1 == execve(executable, pipex->cmds[index].cmd, pipex->env))
-			perror(PROG_NAME);
-	}
-	else
-	{
+		dup2(fd[0], STDIN_FILENO);
 		waitpid(pid, NULL, 0);
-		close(fd_tmp[1]);
-		ft_printf("fd[0]: [%d] fd[1]: [%d]\n", fd[0], fd[1]);
-		
-		char	buf[2000] = {0};
-		read(fd[0], buf, 1999);
-		ft_putendl_fd(buf, 1);
-		
-		fd[fd_index] = fd_tmp[0];
-		fd[fd_index + 1] = fd_tmp[1];
-		
-		if ((index + 1) < pipex->cmds_len)
-			second_part(pipex, index + 1, fd, fd_index + 2);
 	}
-	ft_memdel((void **)&executable);
 }
 
 void	ft_pipex(t_pipex *pipex)
 {
-	const char	*ex = search_executable(pipex->cmds[0].cmd[0]);
-	int			fd[2];
-	int			fd2[20];
+	size_t	i;
 
-	first_part(pipex, ex, fd);
-	ft_memdel((void **)&ex);
-	second_part(pipex, 0, fd2, 0);
-
-	// const char	*ex = search_executable(pipex->cmds[0].cmd[0]);
-	// const pid_t	pid = fork();
-	// pid_t		wpid;
-	// int			status;
-	// int			fd[2];
-	
-	// pipe(fd);
-	// if (pid < 0)
-	// 	perror(PROG_NAME);
-	// else if (0 == pid)
-	// {
-	// 	dup2(fd[1], STDOUT_FILENO);
-	// 	if (-1 == execve(ex, pipex->cmds[0].cmd, pipex->env))
-	// 	{
-	// 		ft_dprintf(STDERR_FILENO, PROG_NAME ": %s: %s\n", ex, strerror(errno));
-	// 	}
-	// }
-	// else
-	// {
-	// 	wpid = waitpid(pid, &status, WUNTRACED);
-	// 	printf("pid[%d] status[%d]\n", pid, status);
-	// 	close(fd[1]);
-	// 	free((char *)ex);
-	// }
+	i = 0;
+	dup2(pipex->fd1, STDIN_FILENO);
+	dup2(pipex->fd2, STDOUT_FILENO);
+	if (BONUS)
+		do_pipe(pipex, pipex->fd1, pipex->cmds[i].cmd);
+	while (i < (pipex->cmds_len - 1))
+	{
+		if (BONUS)
+			do_pipe(pipex, OTHER, pipex->cmds[i].cmd);
+		else
+			do_pipe(pipex, pipex->fd1, pipex->cmds[i].cmd);
+		++i;
+	}
+	if (pipex->fd2 != SYSCALL_ERROR)
+		exec_cmd(pipex, pipex->cmds[i].cmd);
 }
 
 static int	init_pipex(t_pipex *pipex, int ac, char **av, char **env)
@@ -136,9 +102,11 @@ static int	init_pipex(t_pipex *pipex, int ac, char **av, char **env)
 		++i;
 	}
 	pipex->cmds_len = ac - 3;
-	pipex->file1 = av[1];
-	pipex->file2 = av[ac - 1];
 	pipex->env = env;
+	pipex->fd1 = ft_check_open(av[1], O_RDONLY);
+	pipex->fd2 = open(av[ac - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (SYSCALL_ERROR == pipex->fd2)
+		perror(av[ac - 1]);
 	return (EXIT_SUCCESS);
 }
 
@@ -157,6 +125,5 @@ int	main(int ac, char **av, char **env)
 	if (EXIT_FAILURE == init_pipex(singleton(), ac, av, env))
 		return (ft_free_all(EXIT_FAILURE));
 	ft_pipex(singleton());
-	ft_free_all(EMPTY);
-	return (EXIT_SUCCESS);
+	return (ft_free_all(EXIT_SUCCESS));
 }

@@ -6,7 +6,7 @@
 /*   By: besellem <besellem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/28 13:10:40 by besellem          #+#    #+#             */
-/*   Updated: 2021/06/28 18:17:26 by besellem         ###   ########.fr       */
+/*   Updated: 2021/06/29 15:47:00 by besellem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,14 +31,15 @@
 # define PROG_NAME  "pipex"
 # define USAGE      "usage: ./pipex file1 cmd1 cmd2 file2\n"
 
-# define ARGS_LEN  5
-
-# define EMPTY     0
+# define ARGS_LEN      5
+# define OTHER         1
+# define SYSCALL_ERROR (-1)
+# define CMD_NOT_FOUND 127 /* command not found code */
 
 # define ERR() printf("%s:%d: ERROR\n", __FILE__, __LINE__);
 
 # if !defined(BONUS)
-#  define BONUS    0
+#  define BONUS    1
 # endif /* !defined(BONUS) */
 
 /*
@@ -53,8 +54,8 @@ typedef struct s_pipex
 {
 	t_cmds	*cmds;
 	size_t	cmds_len;
-	char	*file1;
-	char	*file2;
+	int		fd1;
+	int		fd2;
 	char	**env;
 }	t_pipex;
 
