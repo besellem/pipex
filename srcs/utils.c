@@ -1,16 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   search_executable.c                                :+:      :+:    :+:   */
+/*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: besellem <besellem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/28 16:08:07 by besellem          #+#    #+#             */
-/*   Updated: 2021/06/28 16:08:40 by besellem         ###   ########.fr       */
+/*   Updated: 2021/06/29 17:31:08 by besellem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+int	ft_check_open(char *path, int mode)
+{
+	int	fd;
+
+	fd = open(path, mode);
+	if (SYSCALL_ERROR == fd)
+	{
+		ft_dprintf(STDERR_FILENO, PROG_NAME": %s: %s\n", path, strerror(errno));
+		return (STDIN_FILENO);
+	}
+	return (fd);
+}
 
 static int	ft_is_openable(char *path, int mode)
 {

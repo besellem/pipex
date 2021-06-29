@@ -6,24 +6,11 @@
 /*   By: besellem <besellem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/28 13:48:19 by besellem          #+#    #+#             */
-/*   Updated: 2021/06/29 16:15:36 by besellem         ###   ########.fr       */
+/*   Updated: 2021/06/29 17:30:36 by besellem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-
-int	ft_check_open(char *path, int mode)
-{
-	int	fd;
-
-	fd = open(path, mode);
-	if (SYSCALL_ERROR == fd)
-	{
-		ft_dprintf(STDERR_FILENO, PROG_NAME": %s: %s\n", path, strerror(errno));
-		return (STDIN_FILENO);
-	}
-	return (fd);
-}
 
 void	exec_cmd(t_pipex *pipex, t_cmds *cmds)
 {
@@ -113,7 +100,6 @@ static int	init_pipex(t_pipex *pipex, int ac, char **av, char **env)
 
 int	main(int ac, char **av, char **env)
 {
-	ft_printf("BONUS[%d]\n", BONUS);
 	if ((BONUS && ac < ARGS_LEN) || (!BONUS && ac != ARGS_LEN))
 	{
 		ft_putstr_fd(USAGE, STDERR_FILENO);

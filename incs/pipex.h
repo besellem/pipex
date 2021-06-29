@@ -6,7 +6,7 @@
 /*   By: besellem <besellem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/28 13:10:40 by besellem          #+#    #+#             */
-/*   Updated: 2021/06/29 15:47:00 by besellem         ###   ########.fr       */
+/*   Updated: 2021/06/29 17:30:58 by besellem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,6 @@
 # define OTHER         1
 # define SYSCALL_ERROR (-1)
 # define CMD_NOT_FOUND 127 /* command not found code */
-
-# define ERR() printf("\e[1;31m%s:%d: ERROR\e[0m\n", __FILE__, __LINE__);
 
 # if !defined(BONUS)
 #  define BONUS    0
@@ -67,9 +65,7 @@ t_pipex		*singleton(void);
 int			ft_free_all(int code);
 
 /* Utils */
+int			ft_check_open(char *path, int mode);
 char		*search_executable(char *command);
 
 #endif
-
-// cmd1    cmd2    cmd3    cmd4
-//	  0  1     2  3    4   5  
