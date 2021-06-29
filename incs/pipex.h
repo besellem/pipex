@@ -36,10 +36,10 @@
 # define SYSCALL_ERROR (-1)
 # define CMD_NOT_FOUND 127 /* command not found code */
 
-# define ERR() printf("%s:%d: ERROR\n", __FILE__, __LINE__);
+# define ERR() printf("\e[1;31m%s:%d: ERROR\e[0m\n", __FILE__, __LINE__);
 
 # if !defined(BONUS)
-#  define BONUS    1
+#  define BONUS    0
 # endif /* !defined(BONUS) */
 
 /*

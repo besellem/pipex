@@ -25,19 +25,20 @@ int	ft_check_open(char *path, int mode)
 	return (fd);
 }
 
-void	exec_cmd(t_pipex *pipex, char **cmds)
+void	exec_cmd(t_pipex *pipex, t_cmds *cmds)
 {
-	const char	*executable = search_executable(cmds[0]);
+	const char	*executable = search_executable(cmds->cmd[0]);
 
-	if (SYSCALL_ERROR == execve(executable, cmds, pipex->env))
+	if (SYSCALL_ERROR == execve(executable, cmds->cmd, pipex->env))
 	{
-		ft_memdel((void **)&executable);
-		perror(PROG_NAME);
+		ft_dprintf(STDERR_FILENO, PROG_NAME": %s: command not found\n",
+			cmds->cmd[0]);
+		ft_free_all(EXIT_FAILURE);
 		exit(EXIT_FAILURE);
 	}
 }
 
-void	do_pipe(t_pipex *pipex, int __fd, char **cmds)
+void	do_pipe(t_pipex *pipex, int __fd, t_cmds *cmds)
 {
 	pid_t	pid;
 	int		fd[2];
@@ -45,14 +46,18 @@ void	do_pipe(t_pipex *pipex, int __fd, char **cmds)
 	pipe(fd);
 	pid = fork();
 	if (pid < 0)
-		perror(PROG_NAME);
+		perror(NULL);
 	else if (0 == pid)
 	{
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
 		if (STDIN_FILENO == __fd)
+		{
+			ft_free_all(EXIT_SUCCESS);
 			exit(EXIT_FAILURE);
-		exec_cmd(pipex, cmds);
+		}
+		else
+			exec_cmd(pipex, cmds);
 	}
 	else
 	{
@@ -69,18 +74,14 @@ void	ft_pipex(t_pipex *pipex)
 	i = 0;
 	dup2(pipex->fd1, STDIN_FILENO);
 	dup2(pipex->fd2, STDOUT_FILENO);
-	if (BONUS)
-		do_pipe(pipex, pipex->fd1, pipex->cmds[i].cmd);
+	do_pipe(pipex, pipex->fd1, &pipex->cmds[i++]);
 	while (i < (pipex->cmds_len - 1))
 	{
-		if (BONUS)
-			do_pipe(pipex, OTHER, pipex->cmds[i].cmd);
-		else
-			do_pipe(pipex, pipex->fd1, pipex->cmds[i].cmd);
+		do_pipe(pipex, OTHER, &pipex->cmds[i]);
 		++i;
 	}
 	if (pipex->fd2 != SYSCALL_ERROR)
-		exec_cmd(pipex, pipex->cmds[i].cmd);
+		exec_cmd(pipex, &pipex->cmds[i]);
 }
 
 static int	init_pipex(t_pipex *pipex, int ac, char **av, char **env)
@@ -112,6 +113,7 @@ static int	init_pipex(t_pipex *pipex, int ac, char **av, char **env)
 
 int	main(int ac, char **av, char **env)
 {
+	ft_printf("BONUS[%d]\n", BONUS);
 	if ((BONUS && ac < ARGS_LEN) || (!BONUS && ac != ARGS_LEN))
 	{
 		ft_putstr_fd(USAGE, STDERR_FILENO);

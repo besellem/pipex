@@ -35,7 +35,7 @@ OBJS 		:=	$(SRCS:%.c=$(OBJ_DIR)/%.o)
 
 ## Commands
 CC			:=	clang
-CFLAGS		:=	-Wall -Wextra -Werror -g3# -fsanitize=address
+CFLAGS		:=	-Wall -Wextra -Werror
 RM			:=	rm -f
 
 
@@ -61,8 +61,6 @@ all:		$(NAME)
 bonus:		all
 
 clean:
-			@echo "Deleting $(CYAN)libft's $(CLR_COLOR)objs ..."
-			@$(MAKE) clean -C $(LIB_DIR) >/dev/null
 			@ echo "Deleting $(CYAN)pipex $(CLR_COLOR)objs ..."
 			@ $(RM) $(OBJS)
 			@ rm -rf $(BUILD_DIR)
@@ -83,4 +81,4 @@ $(OBJ_DIR)/%.o:$(SRCS_DIR)/%.c ./incs/pipex.h | $(BUILD_DIR)
 			@ echo "Compiling $(YELLOW)$< $(CLR_COLOR)..."
 			@ $(CC) $(CFLAGS) -c $< -o $@ $(INCS)
 
-.PHONY:		all clean fclean re
+.PHONY:		all bonus clean fclean re

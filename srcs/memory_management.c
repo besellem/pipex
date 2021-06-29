@@ -32,9 +32,9 @@ int	ft_free_all(int code)
 
 	if (singleton())
 	{
-		i = 0;
 		if (singleton()->cmds)
 		{
+			i = 0;
 			while (singleton()->cmds[i].cmd)
 			{
 				len = ft_strslen(singleton()->cmds[i].cmd);
