@@ -6,7 +6,7 @@
 /*   By: besellem <besellem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/28 13:48:19 by besellem          #+#    #+#             */
-/*   Updated: 2021/06/29 17:30:36 by besellem         ###   ########.fr       */
+/*   Updated: 2021/07/04 21:41:58 by besellem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,40 +62,13 @@ void	ft_pipex(t_pipex *pipex)
 	dup2(pipex->fd1, STDIN_FILENO);
 	dup2(pipex->fd2, STDOUT_FILENO);
 	do_pipe(pipex, pipex->fd1, &pipex->cmds[i++]);
-	while (i < (pipex->cmds_len - 1))
+	while (BONUS && i < (pipex->cmds_len - 1))
 	{
 		do_pipe(pipex, OTHER, &pipex->cmds[i]);
 		++i;
 	}
 	if (pipex->fd2 != SYSCALL_ERROR)
 		exec_cmd(pipex, &pipex->cmds[i]);
-}
-
-static int	init_pipex(t_pipex *pipex, int ac, char **av, char **env)
-{
-	int	i;
-	int	j;
-
-	ft_memset(pipex, 0, sizeof(t_pipex));
-	pipex->cmds = (t_cmds *)ft_calloc(ac - 2, sizeof(t_cmds));
-	if (!pipex->cmds)
-		return (EXIT_FAILURE);
-	i = 0;
-	j = 2;
-	while (j < (ac - 1))
-	{
-		pipex->cmds[i].cmd = ft_strsplit(av[j++], " ");
-		if (!pipex->cmds[i].cmd)
-			return (EXIT_FAILURE);
-		++i;
-	}
-	pipex->cmds_len = ac - 3;
-	pipex->env = env;
-	pipex->fd1 = ft_check_open(av[1], O_RDONLY);
-	pipex->fd2 = open(av[ac - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (SYSCALL_ERROR == pipex->fd2)
-		perror(av[ac - 1]);
-	return (EXIT_SUCCESS);
 }
 
 int	main(int ac, char **av, char **env)

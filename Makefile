@@ -6,7 +6,7 @@
 #    By: besellem <besellem@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/06/25 01:10:15 by besellem          #+#    #+#              #
-#    Updated: 2021/06/29 17:31:13 by besellem         ###   ########.fr        #
+#    Updated: 2021/07/04 22:41:01 by besellem         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,8 @@ DIRS		:=	$(OBJ_DIR) $(addprefix $(OBJ_DIR)/, $(SUB_DIR))
 
 
 ## Main srcs
-SRCS		:=	memory_management.c \
+SRCS		:=	init_pipex.c \
+				memory_management.c \
 				pipex.c \
 				utils.c
 
