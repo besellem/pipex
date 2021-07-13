@@ -6,7 +6,7 @@
 #    By: besellem <besellem@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/06/25 01:10:15 by besellem          #+#    #+#              #
-#    Updated: 2021/07/04 22:41:01 by besellem         ###   ########.fr        #
+#    Updated: 2021/07/13 18:15:40 by besellem         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,7 +36,8 @@ OBJS 		:=	$(SRCS:%.c=$(OBJ_DIR)/%.o)
 
 ## Commands
 CC			:=	clang
-CFLAGS		:=	-Wall -Wextra -Werror
+CFLAGS		:=	-Wall -Wextra -Werror -g3 -fsanitize=address
+BONUS_FLAG	:=
 RM			:=	rm -f
 
 
@@ -59,6 +60,7 @@ $(NAME):	$(OBJS)
 
 all:		$(NAME)
 
+bonus:		BONUS_FLAG := -DBONUS
 bonus:		all
 
 clean:
@@ -80,6 +82,6 @@ $(BUILD_DIR):
 
 $(OBJ_DIR)/%.o:$(SRCS_DIR)/%.c ./incs/pipex.h | $(BUILD_DIR)
 			@ echo "Compiling $(YELLOW)$< $(CLR_COLOR)..."
-			@ $(CC) $(CFLAGS) -c $< -o $@ $(INCS)
+			@ $(CC) $(CFLAGS) -c $< -o $@ $(INCS) $(BONUS_FLAG)
 
 .PHONY:		all bonus clean fclean re

@@ -6,7 +6,7 @@
 /*   By: besellem <besellem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/04 21:40:44 by besellem          #+#    #+#             */
-/*   Updated: 2021/07/04 22:36:12 by besellem         ###   ########.fr       */
+/*   Updated: 2021/07/13 18:09:23 by besellem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,18 +50,15 @@ static void	__open_fds__(t_pipex *pipex, int ac, char **av)
 {
 	if (BONUS && 0 == ft_strcmp(av[1], "here_doc"))
 	{
-		pipex->is_heredoc = TRUE;
 		__read_heredoc__(pipex, av[2]);
 		pipex->fd1 = open(__TMP_HEREDOC_FILE__, O_RDONLY);
 		pipex->fd2 = open(av[ac - 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
-		pipex->cmds_len = ac - 4;
 	}
 	else
 	{
 		pipex->is_heredoc = FALSE;
 		pipex->fd1 = ft_check_open(av[1], O_RDONLY);
 		pipex->fd2 = open(av[ac - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		pipex->cmds_len = ac - 3;
 	}
 	if (SYSCALL_ERROR == pipex->fd2)
 		perror(av[ac - 1]);
@@ -69,10 +66,12 @@ static void	__open_fds__(t_pipex *pipex, int ac, char **av)
 
 int	init_pipex(t_pipex *pipex, int ac, char **av, char **env)
 {
-	int	i;
-	int	j;
+	const int	here_doc_check = (BONUS && 0 == ft_strcmp(av[1], "here_doc"));
+	int			i;
+	int			j;
 
-	__open_fds__(pipex, ac, av);
+	pipex->is_heredoc = here_doc_check;
+	pipex->cmds_len = ac - 3 - here_doc_check;
 	pipex->cmds = (t_cmds *)ft_calloc(pipex->cmds_len + 1, sizeof(t_cmds));
 	if (!pipex->cmds)
 		return (EXIT_FAILURE);
@@ -81,10 +80,15 @@ int	init_pipex(t_pipex *pipex, int ac, char **av, char **env)
 	while (j < (ac - 1))
 	{
 		pipex->cmds[i].cmd = ft_strsplit(av[j++], " ");
-		if (!pipex->cmds[i].cmd)
+		if (0 == ft_strslen(pipex->cmds[i].cmd))
+		{
+			ft_putstr_fd(USAGE, STDERR_FILENO);
 			return (EXIT_FAILURE);
-		++i;
+		}
+		if (!pipex->cmds[i++].cmd)
+			return (EXIT_FAILURE);
 	}
+	__open_fds__(pipex, ac, av);
 	pipex->env = env;
 	return (EXIT_SUCCESS);
 }
